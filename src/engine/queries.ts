@@ -5,7 +5,7 @@
 
 import { FIELD_KEYS } from './fields'
 import { NO_DATA, formatDate, formatMoney } from './format'
-import { normalizeNumber, toIsoDate } from './text'
+import { normalizeNumber, toCheckDate, type DateInput } from './text'
 import type { AnalysisResult, ContractResult, FieldValue, PendingChange } from './types'
 
 export interface FieldAnswer {
@@ -84,9 +84,12 @@ export interface DueBeforeAnswer {
   text: string
 }
 
-/** Q4: contracts with delivery planned strictly before `threshold`, with unapproved term changes. */
-export function contractsDueBefore(result: AnalysisResult, threshold: Date): DueBeforeAnswer {
-  const limit = toIsoDate(threshold)
+/**
+ * Q4: contracts with delivery planned strictly before `threshold`, with unapproved term changes.
+ * `threshold`: `YYYY-MM-DD` string (recommended) or a Date read as its local calendar day.
+ */
+export function contractsDueBefore(result: AnalysisResult, threshold: DateInput): DueBeforeAnswer {
+  const limit = toCheckDate(threshold)
   const key = FIELD_KEYS.deliveryDate
   const items: DueBeforeItem[] = []
   const undetermined: ContractResult[] = []

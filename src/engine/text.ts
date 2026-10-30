@@ -62,6 +62,25 @@ export function toIsoDate(date: Date): string {
   return isoDate(date.getFullYear(), date.getMonth() + 1, date.getDate()) ?? ''
 }
 
+/**
+ * Check date or threshold: an ISO string `YYYY-MM-DD` (recommended for the UI, e.g. the value of
+ * `<input type="date">`) or a `Date`, read as its LOCAL calendar day. Note that
+ * `new Date('2026-03-10')` is UTC midnight, which is 09.03 west of UTC: pass the string instead.
+ */
+export type DateInput = string | Date
+
+/** Validates a DateInput and returns the ISO day; throws RangeError instead of guessing. */
+export function toCheckDate(input: DateInput): string {
+  if (typeof input === 'string') {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input)
+    const iso = m ? isoDate(+m[1], +m[2], +m[3]) : null
+    if (!iso) throw new RangeError(`Дата должна быть в формате YYYY-MM-DD: ${input}`)
+    return iso
+  }
+  if (Number.isNaN(input.getTime())) throw new RangeError('Некорректная дата')
+  return toIsoDate(input)
+}
+
 export interface DateMatch extends Span {
   /** ISO date, or null when the text looks like a date but is not a valid calendar date. */
   value: string | null

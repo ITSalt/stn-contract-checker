@@ -1,11 +1,17 @@
 import { ABSENT_RE, findDates, sentences, topicFirst } from '../text'
 import type { FieldExtractor, MatchHit } from './types'
 
-// «поставить», «поставка», «поставки» — but not «Поставщик».
-const DELIVERY = /(?:^|[^а-яё])постав(?!щик)/i
+// The delivery itself: «поставить», «поставка», «поставлен», «срок отгрузки» — but not
+// «Поставщик» or the participle «поставленный (товар оплачивается…)».
+const DELIVERY = /(?:^|[^а-яё])(?:постав(?:ить|ит|ят|ляет|ляется|ляются|лен|лена|лено|лены|ка|ки|ке|ку|кой)|отгруз(?:ить|ит|ят|ка|ки|ке|ку|кой))(?![а-яё])/i
 // A sentence whose first topic is payment or acceptance is not about the delivery term
-// («Оплата … не позднее 10.04.2026», «Дата приемки может отличаться от даты поставки»).
-const OTHER_TOPIC = /оплат|при[её]мк|аванс|неустойк|штраф|пен[ияюе]|гаранти/i
+// («Оплата … не позднее 10.04.2026», «Дата приемки может отличаться от даты поставки»,
+// «Поставленный товар оплачивается не позднее…»), verb forms included.
+const OTHER_TOPIC = /оплат|оплач|при[её]мк|принима|принят|аванс|неустойк|штраф|(?:^|[^а-яё])пен[ияюе](?![а-яё])|гаранти/i
+// When the predicate is a payment or acceptance verb («поставка оплачивается…», «товар
+// принимается…»), the date belongs to it, unless a delivery verb comes first.
+const DELIVERY_VERB = /(?:^|[^а-яё])(?:постав(?:ить|ит|ят|ляет|ляется|ляются|лен|лена|лено|лены)|отгруз(?:ить|ит|ят))(?![а-яё])/i
+const PAYMENT_VERB = /оплач|оплатить|принима|принять|принят/i
 const DEADLINE_BEFORE = /(?:не\s+позднее|не\s+позже|до|по)\s*«?$/i
 const CHANGE_VERB = /(?:^|[^а-яё])(?:изменить|перенести|продлить|сдвинуть|установить)/i
 
@@ -14,6 +20,7 @@ function hitsIn(text: string, proposal: boolean): MatchHit[] {
   for (const s of sentences(text)) {
     const sentence = text.slice(s.start, s.end)
     if (!DELIVERY.test(sentence) || !topicFirst(sentence, DELIVERY, OTHER_TOPIC)) continue
+    if (PAYMENT_VERB.test(sentence) && !topicFirst(sentence, DELIVERY_VERB, PAYMENT_VERB)) continue
     const dates = findDates(sentence)
     if (dates.length === 0) {
       if (proposal) continue
