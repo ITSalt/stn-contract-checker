@@ -1,9 +1,10 @@
 // Test helpers shared by engine tests (not shipped in the app bundle).
 import { readFileSync, readdirSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import type { AnalysisResult, Evidence, InputFile } from '../engine'
 
-const DOCUMENTS_DIR = fileURLToPath(new URL('../../documents/', import.meta.url))
+// import.meta.dirname works in both node and jsdom test environments (import.meta.url is not file: in jsdom).
+const DOCUMENTS_DIR = join(import.meta.dirname, '../../documents/')
 
 /** The training documents from `documents/`, as uploaded by the user. */
 export function loadDocuments(): InputFile[] {
