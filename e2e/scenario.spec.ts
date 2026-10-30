@@ -85,7 +85,10 @@ test('buyer scenario: upload, evidence, pending changes, four questions, check d
   await table.scrollIntoViewIfNeeded()
   await shot(page, '09-checkdate-28-02')
 
-  await page.getByTestId('check-date').fill('2026-03-10')
+  // Question 1 from another date: the date moves to 10.03 with an explicit notice and a way back.
+  await page.getByTestId('question-1').click()
+  await expect(page.getByTestId('date-changed')).toContainText('Дата проверки изменена на 10.03.2026 (дата из вопроса), была 28.02.2026')
+  await expect(page.getByTestId('check-date')).toHaveValue('2026-03-10')
   await expect(cell(page, 'STN-101', 'deliveryDate')).toContainText('30.04.2026')
   await page.setViewportSize({ width: 1024, height: 900 })
   await table.scrollIntoViewIfNeeded()

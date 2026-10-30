@@ -179,3 +179,58 @@ describe('review round 1', () => {
     expect(within(panel).getByTestId('focused-paragraph').id).toBe('01_contract.txt-p8')
   })
 })
+
+describe('question 1 and the check date (D-14)', () => {
+  it('moves the date to 10.03.2026 with a visible notice and a button that restores the old date', async () => {
+    const user = await renderWithDocuments()
+    fireEvent.change(screen.getByTestId('check-date'), { target: { value: '2026-02-28' } })
+    await user.click(screen.getByTestId('question-1'))
+    expect(screen.getByTestId('check-date')).toHaveValue('2026-03-10')
+    expect(screen.getByTestId('date-changed')).toHaveTextContent('Дата проверки изменена на 10.03.2026 (дата из вопроса), была 28.02.2026')
+    await user.click(screen.getByRole('button', { name: 'Вернуть 28.02.2026' }))
+    expect(screen.getByTestId('check-date')).toHaveValue('2026-02-28')
+    expect(screen.queryByTestId('date-changed')).toBeNull()
+    expect(cell('STN-101', 'deliveryDate')).toHaveTextContent('15.04.2026')
+  })
+
+  it('no notice when the date is already 10.03.2026', async () => {
+    const user = await renderWithDocuments()
+    await user.click(screen.getByTestId('question-1'))
+    expect(screen.queryByTestId('date-changed')).toBeNull()
+  })
+
+  it('a manual date change removes the notice together with the question', async () => {
+    const user = await renderWithDocuments()
+    fireEvent.change(screen.getByTestId('check-date'), { target: { value: '2026-02-28' } })
+    await user.click(screen.getByTestId('question-1'))
+    fireEvent.change(screen.getByTestId('check-date'), { target: { value: '2026-03-01' } })
+    expect(screen.queryByTestId('date-changed')).toBeNull()
+  })
+})
+
+describe('documents that change nothing (D-4)', () => {
+  const extra = (name: string, text: string) => new File([text], name, { type: 'text/plain' })
+  const status = ['ПИСЬМО ПОСТАВЩИКА', 'Дата: 06.03.2026', 'Тема: договор STN-102', '', 'Просим сообщить статус поставки по договору STN-102.'].join('\n')
+
+  it('a letter without a proposal is shown in «Сведения для проверки» with its quote', async () => {
+    const user = await renderWithDocuments()
+    await user.upload(screen.getByTestId('file-input'), [extra('status.txt', status)])
+    const item = await within(screen.getByTestId('pending-section')).findByTestId('info-item')
+    expect(item).toHaveTextContent('status.txt')
+    expect(item).toHaveTextContent('условий не меняет')
+    expect(item).toHaveTextContent('Просим сообщить статус поставки по договору STN-102.')
+    await user.click(within(item).getByRole('button', { name: 'Показать в тексте' }))
+    const panel = await screen.findByTestId('evidence-panel')
+    expect(within(panel).getByTestId('info-item')).toHaveTextContent('status.txt')
+  })
+
+  it('a contract signed after the check date shows the reason in the panel', async () => {
+    await renderWithDocuments()
+    const user = userEvent.setup()
+    fireEvent.change(screen.getByTestId('check-date'), { target: { value: '2000-01-01' } })
+    expect(rowOf('STN-101')).toHaveTextContent('требует проверки')
+    await user.click(cell('STN-101', 'amount'))
+    expect(await screen.findByTestId('contract-issues')).toHaveTextContent('не заключён')
+  })
+})
+
