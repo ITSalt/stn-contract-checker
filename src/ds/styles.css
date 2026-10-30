@@ -1,0 +1,270 @@
+/* ============================================================
+   Internal ITSalt design system — Tailwind v4 entry.
+   Tokens, base styles and type helpers (it-*).
+   ============================================================ */
+@import "tailwindcss";
+@import "./fonts.css";
+
+@theme {
+  /* ---- Type families ---- */
+  --font-sans: "Inter", "IBM Plex Sans", system-ui, sans-serif;
+  --font-display: "Inter Tight", "Manrope", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  /* ---- Brand palette ---- */
+  /* paper / surface */
+  --color-paper-warm: #F7F3EA;
+  --color-paper-soft: #EFE8DC;
+  --color-paper-layer: #D8CEC0;
+  --color-surface-card: #FFFFFF;
+  --color-surface-sunk: #F1EBDF;
+  /* ink */
+  --color-graphite: #161A1D;
+  --color-slate-deep: #263238;
+  --color-ink-muted: #4A4F52;
+  --color-ink-faint: #8A8378;
+  /* signal orange — the route; CTAs and actions only, never a wash */
+  --color-brand: #F4510B;
+  --color-brand-burnt: #C84312;
+  --color-brand-route: #FF6A1A;
+  /* cold balance */
+  --color-petrol: #0E4B53;
+  --color-teal-deep: #163F45;
+  --color-fog: #CBD7D6;
+  /* borders */
+  --color-border-paper: #E2D8CA;
+  --color-border-strong: #C9BDAC;
+  /* danger — own hue, deeper/redder than brand-burnt.
+     brand-burnt stays the primary-hover; it no longer doubles as "delete". */
+  --color-danger: #B3261E;
+  --color-danger-hover: #8F1E18;
+
+  /* ---- Interaction surfaces ---- */
+  --color-primary-hover: var(--color-brand-burnt);
+  --color-hover-paper: rgba(22, 26, 29, 0.05);   /* hover on paper-warm / transparent bg */
+  --color-hover-card: var(--color-paper-warm);    /* hover on card (white) bg */
+
+  /* ---- Tone table. Badge, Alert, Toaster, StatCard consume ONLY these.
+     -bg = soft fill, -fg = text / stripe / solid fill. info ≠ success by design. ---- */
+  --color-tone-neutral-bg: var(--color-surface-sunk);
+  --color-tone-neutral-fg: var(--color-ink-muted);
+  --color-tone-success-bg: rgba(14, 75, 83, 0.10);
+  --color-tone-success-fg: var(--color-petrol);
+  --color-tone-info-bg: rgba(203, 215, 214, 0.55);
+  --color-tone-info-fg: var(--color-slate-deep);
+  --color-tone-warning-bg: rgba(255, 106, 26, 0.14);
+  --color-tone-warning-fg: var(--color-brand-burnt);
+  --color-tone-danger-bg: rgba(179, 38, 30, 0.10);
+  --color-tone-danger-fg: var(--color-danger);
+  --color-tone-accent-bg: var(--color-brand);
+  --color-tone-accent-fg: #FFFFFF;
+
+  /* ---- Control height scale: h-ctl-xs … h-ctl-xl ---- */
+  --spacing-ctl-xs: 22px;  /* Badge */
+  --spacing-ctl-sm: 26px;  /* Chip sm, IconButton sm */
+  --spacing-ctl-md: 30px;  /* Button sm, Chip, IconButton, Pager */
+  --spacing-ctl-lg: 40px;  /* Button, Input family, IconButton lg */
+  --spacing-ctl-xl: 48px;  /* Button lg */
+
+  /* ---- shadcn semantic tokens (referenced across components/ui) ---- */
+  --color-background: var(--color-paper-warm);
+  --color-foreground: var(--color-graphite);
+  --color-card: var(--color-surface-card);
+  --color-card-foreground: var(--color-graphite);
+  --color-popover: var(--color-surface-card);
+  --color-popover-foreground: var(--color-graphite);
+  --color-primary: var(--color-brand);
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: var(--color-paper-soft);
+  --color-secondary-foreground: var(--color-slate-deep);
+  --color-muted: var(--color-surface-sunk);
+  --color-muted-foreground: var(--color-ink-muted);
+  --color-accent: var(--color-paper-soft);
+  --color-accent-foreground: var(--color-graphite);
+  --color-destructive: var(--color-danger);
+  --color-destructive-foreground: #FFFFFF;
+  --color-border: var(--color-border-paper);
+  --color-input: var(--color-border-paper);
+  --color-ring: var(--color-brand);
+
+  /* ---- Radii (xs 6 / sm 10 / md 14 default card / lg 20; pill = rounded-full) ---- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  /* ---- Shadows — 3 paper-lifted elevations + CTA glow ---- */
+  --shadow-soft: 0 8px 20px rgba(22, 26, 29, 0.06);
+  --shadow-card: 0 18px 40px rgba(22, 26, 29, 0.08);
+  --shadow-lift: 0 28px 60px rgba(22, 26, 29, 0.14);
+  --shadow-orange: 0 12px 28px rgba(244, 81, 11, 0.28);
+  /* small knob shadow — Switch thumb, range thumb (replaces Tailwind shadow-lg/md) */
+  --shadow-thumb: 0 1px 4px rgba(22, 26, 29, 0.2);
+
+  /* ---- Motion ---- */
+  --ease-enter: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Non-theme tokens: consumed via var() / the utilities below, not as Tailwind namespaces. */
+:root {
+  --focus-ring-width: 3px;
+  --focus-ring-color: rgba(244, 81, 11, 0.25);   /* decision: 3px / 25% */
+  --disabled-opacity: 0.45;
+  --motion-fast: 150ms;    /* hover, press, colour */
+  --motion-enter: 220ms;   /* overlays, toasts, sheets (was 240) */
+  --motion-slow: 400ms;    /* progress fill only */
+  --z-dropdown: 50;        /* Popover, Command, Tooltip */
+  --z-overlay: 100;        /* Dialog base; nested dialogs add +10 per level */
+  --z-toast: 200;
+}
+
+@layer base {
+  /* Resting outline colour = ring colour, so `transition-colors` (which includes
+     outline-color) never fades the focus ring in from currentColor (dark flash).
+     Not applied while :focus-visible, so native elements keep the browser's own
+     focus ring; DS primitives get the same colour from `focus-ring` there. */
+  *:not(:focus-visible),
+  ::before,
+  ::after {
+    outline-color: var(--focus-ring-color);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    line-height: 1.55;
+  }
+}
+
+/* ============================================================
+   Semantic type helpers
+   ============================================================ */
+
+/* One focus ring, one disabled look.
+   Outline (not box-shadow) so it never fights shadow-* / ring-* utilities
+   and follows border-radius. Usage: `focus-visible:focus-ring`, `disabled:disabled-dim`,
+   `aria-disabled:disabled-dim`, `data-[disabled]:disabled-dim`. */
+@utility focus-ring {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: 0;
+}
+@utility disabled-dim {
+  opacity: var(--disabled-opacity);
+  cursor: not-allowed;
+}
+@utility hover-paper {
+  background-color: var(--color-hover-paper);
+}
+@utility hover-card {
+  background-color: var(--color-hover-card);
+}
+
+@layer components {
+  .it-h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 3.4vw, 40px);
+    line-height: 1.18;
+    letter-spacing: -0.015em;
+    color: var(--color-graphite);
+  }
+  .it-h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(22px, 2.4vw, 30px);
+    line-height: 1.18;
+    letter-spacing: -0.01em;
+    color: var(--color-graphite);
+  }
+  .it-h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+    color: var(--color-slate-deep);
+  }
+  /* Missing step: Topbar title, Dialog title, StepChip title, card titles */
+  .it-h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    color: var(--color-graphite);
+  }
+  /* Body helpers set size/leading only; colour comes from the context
+     (text-muted-foreground / text-foreground). */
+  .it-body {
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .it-small {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  /* Meta / labels — uppercase engineering caps. THE single micro-label recipe:
+     table <th>, dt, StatCard label, Alert tag, Disclosure, SidebarNav group,
+     panel headings. Mono, because that is what the system actually uses. */
+  .it-meta {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+  /* Mono — family + tracking only. Size and colour come from utilities
+     (text-xs / text-[11px] / text-muted-foreground). */
+  .it-mono {
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+  }
+  .it-eyebrow {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-brand);
+  }
+  /* The signature orange rule — short bar under headlines */
+  .it-rule {
+    display: block;
+    width: 56px;
+    height: 5px;
+    background: var(--color-brand);
+    border-radius: 999px;
+  }
+}
+
+/* ============================================================
+   Global reduced-motion safety net.
+   Component-level transitions/animations are already gated behind
+   Tailwind's `motion-safe:` variant; this blanket rule is the
+   belt-and-suspenders fallback so no DS transition/animation escapes
+   `prefers-reduced-motion: reduce`, including any raw `transition-*`
+   / `animate-*` utility that is not (yet) motion-safe-scoped.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Spinner is an explicit accessibility exception: a stalled loading
+     spinner reads as a frozen/broken UI, so it keeps spinning even with
+     reduced motion (accessibility exception). */
+  .animate-spin {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
