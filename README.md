@@ -44,9 +44,7 @@
 После изменения `docs/longread/` в `main` обновить опубликованную копию можно из корня репозитория:
 
 ```bash
-git subtree split --prefix docs/longread -b longread-publish
-git push origin longread-publish:gh-pages
-git branch -d longread-publish
+git subtree push --prefix docs/longread origin gh-pages
 ```
 
 В настройках **Settings → Pages** должен быть выбран источник **Deploy from a branch**,
