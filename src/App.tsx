@@ -88,7 +88,12 @@ export default function App() {
               size="md"
               data-testid="check-date"
               value={checkDate}
-              onChange={(e) => ISO_DAY.test(e.target.value) && setCheckDate(e.target.value)}
+              onChange={(e) => {
+                if (!ISO_DAY.test(e.target.value)) return
+                setCheckDate(e.target.value)
+                // Question 1 is asked «на 10 марта 2026»: another date is no longer that question.
+                if (question?.kind === 'delivery') setQuestion(null)
+              }}
               className="w-[170px]"
             />
           </FormField>
@@ -255,7 +260,7 @@ export default function App() {
             {allPending.map(({ contract, change }) => (
               <div key={`${contract.key}-${change.fileName}-${change.field}-${change.paragraphId}`} className="flex flex-col gap-1">
                 <span className="font-mono text-xs text-muted-foreground">Договор {contract.number ?? contract.fileName}</span>
-                <PendingItem change={change} onShow={openEvidence} />
+                <PendingItem change={change} doc={result.documents.find((d) => d.fileName === change.fileName)} onShow={openEvidence} />
               </div>
             ))}
           </PanelBody>

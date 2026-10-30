@@ -5,7 +5,7 @@ import { Button } from '../ds/components/button'
 import { Dialog, DialogBody, DialogHeader } from '../ds/components/dialog'
 import { cn } from '../ds/lib/utils'
 import { fieldByKey, formatValue } from '../engine'
-import type { AnalysisResult, Evidence, PendingChange } from '../engine'
+import type { AnalysisResult, DocumentInfo, Evidence, PendingChange } from '../engine'
 import type { CellRef } from './ContractsTable'
 import { DocumentView, type Highlight } from './DocumentView'
 import { docTypeLabel, FIELD_STATUS_LABEL, paragraphAnchor } from './labels'
@@ -44,11 +44,12 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-export function PendingItem({ change, onShow }: { change: PendingChange; onShow: (e: Evidence) => void }) {
+/** `doc` is the source document: its type label uses the real signature status, not a guess. */
+export function PendingItem({ change, doc, onShow }: { change: PendingChange; doc: DocumentInfo | undefined; onShow: (e: Evidence) => void }) {
   const field = fieldByKey(change.field)
-  const type = docTypeLabel({ docType: change.docType, signStatus: change.docType === 'amendment' ? 'signed_both' : 'unsigned' })
+  const type = docTypeLabel({ docType: change.docType, signStatus: doc?.signStatus ?? 'unclear' })
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-dashed border-border-strong bg-surface-sunk/40 px-4 py-3">
+    <div data-testid="pending-item" className="flex flex-col gap-2 rounded-md border border-dashed border-border-strong bg-surface-sunk/40 px-4 py-3">
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="font-medium text-foreground">
           {change.fieldLabel}: {field ? formatValue(field.kind, change.proposedValue) : String(change.proposedValue)}
@@ -86,6 +87,12 @@ export function EvidencePanel({ result, cell, onClose }: EvidencePanelProps) {
   const first = evidence[0] ?? original[0] ?? null
   const [viewFile, setViewFile] = React.useState<string | null>(null)
   const [focusId, setFocusId] = React.useState<string | null>(null)
+  // Incremented by «Показать в тексте»: scroll the panel to the document text (not on open).
+  const [jump, setJump] = React.useState(0)
+  const textSection = React.useRef<HTMLDivElement>(null)
+  React.useEffect(() => {
+    if (jump > 0) textSection.current?.scrollIntoView?.({ block: 'start' })
+  }, [jump])
   React.useEffect(() => {
     setViewFile(first?.fileName ?? files[0] ?? null)
     setFocusId(first ? paragraphAnchor(first.fileName, first.paragraphId) : null)
@@ -95,8 +102,10 @@ export function EvidencePanel({ result, cell, onClose }: EvidencePanelProps) {
   const show = (e: Evidence) => {
     setViewFile(e.fileName)
     setFocusId(paragraphAnchor(e.fileName, e.paragraphId))
+    setJump((n) => n + 1)
   }
   const doc = result.documents.find((d) => d.fileName === viewFile)
+  const docOf = (name: string) => result.documents.find((d) => d.fileName === name)
 
   return (
     <Dialog open={Boolean(contract && field && value)} onOpenChange={(open) => !open && onClose()} placement="side" size="xl" data-testid="evidence-panel">
@@ -108,7 +117,7 @@ export function EvidencePanel({ result, cell, onClose }: EvidencePanelProps) {
               <span className="it-h3 text-foreground" data-testid="evidence-value">
                 {formatValue(field.kind, value.value)}
               </span>
-              <Badge tone={value.status === 'ok' ? 'success' : value.status === 'no_data' ? 'neutral' : 'warning'}>{FIELD_STATUS_LABEL[value.status]}</Badge>
+              {value.status !== 'no_data' ? <Badge tone={value.status === 'ok' ? 'success' : 'warning'}>{FIELD_STATUS_LABEL[value.status]}</Badge> : null}
             </div>
             {value.reason && value.status !== 'ok' ? <p className="text-sm text-foreground">{value.reason}</p> : null}
 
@@ -138,12 +147,13 @@ export function EvidencePanel({ result, cell, onClose }: EvidencePanelProps) {
             {pending.length > 0 || otherPending.length > 0 ? (
               <Section title="Сведения для проверки (не действуют)">
                 {[...pending, ...otherPending].map((p) => (
-                  <PendingItem key={`${p.fileName}-${p.field}-${p.paragraphId}`} change={p} onShow={show} />
+                  <PendingItem key={`${p.fileName}-${p.field}-${p.paragraphId}`} change={p} doc={docOf(p.fileName)} onShow={show} />
                 ))}
               </Section>
             ) : null}
 
             {doc ? (
+              <div ref={textSection} className="scroll-mt-4">
               <Section title="Текст документа">
                 <div className="flex flex-wrap gap-1" role="group" aria-label="Документы договора">
                   {files.map((name) => (
@@ -164,8 +174,9 @@ export function EvidencePanel({ result, cell, onClose }: EvidencePanelProps) {
                     </button>
                   ))}
                 </div>
-                <DocumentView doc={doc} highlights={highlights} focusId={focusId} />
+                <DocumentView doc={doc} highlights={highlights} focusId={focusId} jump={jump} />
               </Section>
+              </div>
             ) : null}
           </DialogBody>
         </>

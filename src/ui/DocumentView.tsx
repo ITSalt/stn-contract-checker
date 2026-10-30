@@ -10,7 +10,7 @@ export interface Highlight {
 }
 
 /** Full document text by paragraphs; paragraphs with a quote are highlighted, the quote is marked. */
-export function DocumentView({ doc, highlights, focusId }: { doc: DocumentInfo; highlights: Highlight[]; focusId: string | null }) {
+export function DocumentView({ doc, highlights, focusId, jump = 0 }: { doc: DocumentInfo; highlights: Highlight[]; focusId: string | null; jump?: number }) {
   const own = highlights.filter((h) => h.fileName === doc.fileName)
   const box = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
@@ -19,7 +19,7 @@ export function DocumentView({ doc, highlights, focusId }: { doc: DocumentInfo; 
     const el = focusId ? document.getElementById(focusId) : null
     if (!container || !el) return
     container.scrollTop = Math.max(0, el.offsetTop - container.clientHeight / 2 + el.clientHeight / 2)
-  }, [focusId, doc.fileName])
+  }, [focusId, doc.fileName, jump])
 
   return (
     <div ref={box} className="relative max-h-[360px] overflow-y-auto rounded-md border border-border bg-card px-4 py-3" data-testid="document-view">
@@ -31,6 +31,7 @@ export function DocumentView({ doc, highlights, focusId }: { doc: DocumentInfo; 
             key={p.id}
             id={id}
             data-highlighted={hit ? 'true' : undefined}
+            data-testid={focusId === id ? 'focused-paragraph' : undefined}
             className={cn('my-1 rounded-sm px-2 py-1 text-[13px] leading-relaxed text-foreground', hit && 'bg-primary/10', focusId === id && 'ring-1 ring-primary/50')}
           >
             <span className="mr-2 select-none font-mono text-[10px] text-ink-faint">{p.id}</span>

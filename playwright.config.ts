@@ -16,11 +16,13 @@ export default defineConfig({
     viewport: { width: 1440, height: 900 },
     locale: 'ru-RU',
     timezoneId: 'Europe/Moscow',
+    // Overlays animate with motion-safe: screenshots are taken without the enter animation.
+    reducedMotion: 'reduce',
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, locale: 'ru-RU', timezoneId: 'Europe/Moscow', launchOptions: { args: ['--lang=ru-RU'], env: { ...process.env, LANG: 'ru_RU.UTF-8', LANGUAGE: 'ru' } } },
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 }, locale: 'ru-RU', timezoneId: 'Europe/Moscow', reducedMotion: 'reduce', launchOptions: { args: ['--lang=ru-RU'], env: { ...process.env, LANG: 'ru_RU.UTF-8', LANGUAGE: 'ru' } } },
     },
   ],
   webServer: {

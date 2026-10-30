@@ -106,3 +106,76 @@ describe('procurement screen', () => {
     expect(screen.getByText('Документы не загружены')).toBeInTheDocument()
   })
 })
+
+describe('review round 1', () => {
+  const extra = (name: string, text: string) => new File([text], name, { type: 'text/plain' })
+  const unsignedAmendment = [
+    'ДОПОЛНИТЕЛЬНОЕ СОГЛАШЕНИЕ № 3 К ДОГОВОРУ STN-102',
+    'Дата: 05.03.2026',
+    'Статус: не подписано покупателем.',
+    '1. Пункт 2.1 договора изложить в следующей редакции: «Общая стоимость поставки составляет 900 000 рублей, включая НДС».',
+    '2. Настоящее соглашение вступает в силу 05.03.2026.',
+  ].join('\n')
+  const contractWithoutTerm = ['ДОГОВОР ПОСТАВКИ № Q-77', 'Статус: подписан обеими сторонами 01.02.2026.', '1.1. Поставщик: ООО «Без Срока».', '2.1. Общая стоимость поставки составляет 100 000 рублей.'].join('\n')
+
+  it('unsigned amendment in «Сведения для проверки» is not labelled as signed', async () => {
+    const user = await renderWithDocuments()
+    await user.upload(screen.getByTestId('file-input'), [extra('a3.txt', unsignedAmendment)])
+    const itemOf = (root: HTMLElement) => within(root).getAllByTestId('pending-item').find((el) => el.textContent?.includes('a3.txt')) as HTMLElement
+    const item = itemOf(screen.getByTestId('pending-section'))
+    expect(item).toHaveTextContent('Допсоглашение без подписи')
+    expect(item).not.toHaveTextContent('Подписанное допсоглашение')
+    await user.click(cell('STN-102', 'amount'))
+    const panelItem = itemOf(await screen.findByTestId('evidence-panel'))
+    expect(panelItem).not.toHaveTextContent('Подписанное допсоглашение')
+  })
+
+  it('unknown document is shown as «Не распознан»', async () => {
+    const user = await renderWithDocuments()
+    await user.upload(screen.getByTestId('file-input'), [extra('note.txt', 'Служебная записка\nПросим ускорить.')])
+    expect(within(screen.getByTestId('doc-note.txt')).getByText('Не распознан')).toBeInTheDocument()
+    expect(screen.getByTestId('global-issues')).toHaveTextContent('note.txt')
+  })
+
+  it('a contract with an undetermined term is named in the Q4 answer and under the table', async () => {
+    const user = await renderWithDocuments()
+    await user.upload(screen.getByTestId('file-input'), [extra('q77.txt', contractWithoutTerm)])
+    await user.click(screen.getByTestId('question-4'))
+    expect(screen.getByTestId('answer')).toHaveTextContent('Срок не определён: Q-77')
+    expect(screen.getByTestId('undetermined')).toHaveTextContent('Q-77')
+    expect(screen.queryByTestId('cell-Q-77-number')).toBeNull()
+  })
+
+  it('row with a no_data field is «нет данных: сумма», not «ок»', async () => {
+    await renderWithDocuments()
+    expect(rowOf('STN-103')).toHaveTextContent('нет данных: сумма')
+    expect(within(rowOf('STN-103')).queryByText('ок')).toBeNull()
+  })
+
+  it('non-TXT files are reported, not dropped silently', async () => {
+    const user = userEvent.setup({ applyAccept: false })
+    render(<App />)
+    await user.upload(screen.getByTestId('file-input'), [new File(['x'], 'scan.pdf', { type: 'application/pdf' }), extra('c.txt', contractWithoutTerm)])
+    expect(await screen.findByText('Принимаются только TXT, пропущены: scan.pdf')).toBeInTheDocument()
+    expect(screen.getByTestId('doc-c.txt')).toBeInTheDocument()
+  })
+
+  it('manual check date change deselects question 1; the panel does not repeat «нет данных»', async () => {
+    const user = await renderWithDocuments()
+    await user.click(screen.getByTestId('question-1'))
+    fireEvent.change(screen.getByTestId('check-date'), { target: { value: '2026-02-28' } })
+    expect(screen.queryByTestId('answer')).toBeNull()
+    await user.click(cell('STN-103', 'amount'))
+    const panel = await screen.findByTestId('evidence-panel')
+    expect(within(panel).getAllByText('нет данных')).toHaveLength(1)
+  })
+
+  it('«Показать в тексте» focuses the paragraph in the document view', async () => {
+    const user = await renderWithDocuments()
+    await user.click(cell('STN-101', 'deliveryDate'))
+    const panel = await screen.findByTestId('evidence-panel')
+    const buttons = within(panel).getAllByRole('button', { name: 'Показать в тексте' })
+    await user.click(buttons[1])
+    expect(within(panel).getByTestId('focused-paragraph').id).toBe('01_contract.txt-p8')
+  })
+})

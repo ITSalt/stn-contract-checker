@@ -22,15 +22,32 @@ interface ContractsTableProps {
 // Badges are nowrap by default; in the narrow status column long labels wrap (1024 px).
 const WRAP = 'h-auto min-h-ctl-xs whitespace-normal py-1 leading-tight'
 
+/** «Сумма, ₽» → «сумма». */
+function shortLabel(label: string): string {
+  return label.replace(/,.*$/, '').toLowerCase()
+}
+
 export function RowStatus({ contract }: { contract: ContractResult }) {
   const pending = contract.pendingChanges.length > 0
+  const missing = FIELDS.filter((f) => contract.fields[f.key]?.status === 'no_data')
   return (
     <div className="flex flex-col items-start gap-1">
       {contract.needsReview ? <Badge tone="warning" className={WRAP}>требует проверки</Badge> : null}
       {pending ? <Badge tone="info" className={WRAP}>есть несогласованные изменения</Badge> : null}
-      {!contract.needsReview && !pending ? <Badge tone="success">ок</Badge> : null}
+      {missing.length > 0 ? <Badge tone="neutral" className={WRAP}>нет данных: {missing.map((f) => shortLabel(f.label)).join(', ')}</Badge> : null}
+      {!contract.needsReview && !pending && missing.length === 0 ? <Badge tone="success">ок</Badge> : null}
     </div>
   )
+}
+
+/** File name that wraps after «_» and «.», not in the middle of a word. */
+function breakable(name: string): React.ReactNode {
+  return name.split(/(?<=[_.])/).map((part, i) => (
+    <React.Fragment key={i}>
+      {i > 0 ? <wbr /> : null}
+      {part}
+    </React.Fragment>
+  ))
 }
 
 function FieldCell({ contract, field, value, onOpen, highlighted }: {
@@ -63,7 +80,7 @@ function FieldCell({ contract, field, value, onOpen, highlighted }: {
       ) : null}
       {value.changedBy ? (
         <span className="max-w-[200px] text-[11px] leading-snug text-muted-foreground">
-          изменено: <span className="font-mono break-all">{value.changedBy.fileName}</span>
+          изменено: <span className="font-mono">{breakable(value.changedBy.fileName)}</span>
           <br />
           было: {formatValue(field.kind, value.original ?? null)}
         </span>

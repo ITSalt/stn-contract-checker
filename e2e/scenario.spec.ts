@@ -40,6 +40,10 @@ test('buyer scenario: upload, evidence, pending changes, four questions, check d
   await expect(panel.getByText('02_amendment_signed.txt · p6').first()).toBeVisible()
   await expect(panel.getByText('«Поставщик обязуется поставить оборудование не позднее 30.04.2026»', { exact: true })).toBeVisible()
   await shot(page, '03-evidence-stn101-delivery')
+  // «Показать в тексте» brings the document text and the paragraph into view.
+  await panel.getByRole('button', { name: 'Показать в тексте' }).nth(1).click()
+  await expect(panel.getByTestId('focused-paragraph')).toContainText('не позднее 15.04.2026')
+  await expect(panel.getByTestId('focused-paragraph')).toBeInViewport()
   await page.keyboard.press('Escape')
   await expect(panel).toBeHidden()
 

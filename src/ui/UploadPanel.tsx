@@ -8,10 +8,12 @@ import { cn } from '../ds/lib/utils'
 import type { AnalysisResult, InputFile } from '../engine'
 import { docTypeLabel, SIGN_STATUS_LABEL } from './labels'
 
-/** Reads browser files as text; only `.txt` is accepted. */
-export async function readTextFiles(list: FileList | File[]): Promise<InputFile[]> {
-  const files = Array.from(list).filter((f) => f.name.toLowerCase().endsWith('.txt'))
-  return Promise.all(files.map(async (f) => ({ name: f.name, text: await f.text() })))
+/** Reads browser files as text; only `.txt` is accepted, the rest is returned as skipped. */
+export async function readTextFiles(list: FileList | File[]): Promise<{ files: InputFile[]; skipped: string[] }> {
+  const all = Array.from(list)
+  const txt = all.filter((f) => f.name.toLowerCase().endsWith('.txt'))
+  const skipped = all.filter((f) => !txt.includes(f)).map((f) => f.name)
+  return { files: await Promise.all(txt.map(async (f) => ({ name: f.name, text: await f.text() }))), skipped }
 }
 
 /** Loads the training set from `public/samples/` (same files as `documents/`, analyzed like any upload). */
@@ -32,11 +34,14 @@ export function UploadPanel({ result, onAdd, onRemove, onClear }: UploadPanelPro
   const inputRef = React.useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = React.useState(false)
   const [loadError, setLoadError] = React.useState<string | null>(null)
+  const [skipped, setSkipped] = React.useState<string[]>([])
   const numberByKey = new Map(result.contracts.map((c) => [c.key, c.number ?? c.fileName]))
 
   const add = async (list: FileList | File[] | null) => {
     if (!list) return
-    onAdd(await readTextFiles(list))
+    const read = await readTextFiles(list)
+    setSkipped(read.skipped)
+    if (read.files.length > 0) onAdd(read.files)
   }
 
   return (
@@ -102,6 +107,7 @@ export function UploadPanel({ result, onAdd, onRemove, onClear }: UploadPanelPro
             }}
           />
           {loadError ? <p className="it-small text-destructive">{loadError}</p> : null}
+          {skipped.length > 0 ? <p className="it-small text-destructive">Принимаются только TXT, пропущены: {skipped.join(', ')}</p> : null}
         </div>
 
         {result.documents.length > 0 ? (
