@@ -85,7 +85,7 @@ describe('documents/ at 10.03.2026', () => {
 
     const q3 = contractAmount(result, 'STN-103')
     expect(q3.field?.status).toBe('no_data')
-    expect(q3.text).toContain('нет данных')
+    expect(q3.text).toContain('нет данных — В договоре сказано, что стоимость не указана')
 
     const q4 = contractsDueBefore(result, new Date(2026, 3, 1))
     expect(q4.items.map((i) => i.contract.number)).toEqual(['STN-102'])

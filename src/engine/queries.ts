@@ -31,7 +31,8 @@ export function findContract(result: AnalysisResult, contractNumber: string): Co
 function sourceText(field: FieldValue): string {
   if (field.changedBy) return ` (изменено: ${field.changedBy.fileName})`
   const first = field.evidence[0]
-  return first ? ` (источник: ${first.fileName})` : ''
+  const why = field.status === 'no_data' && field.reason ? ` — ${field.reason}` : ''
+  return `${why}${first ? ` (источник: ${first.fileName})` : ''}`
 }
 
 function fieldAnswer(result: AnalysisResult, contractNumber: string, key: string, describe: (f: FieldValue) => string): FieldAnswer {
