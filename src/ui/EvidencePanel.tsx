@@ -5,7 +5,7 @@ import { Button } from '../ds/components/button'
 import { Dialog, DialogBody, DialogHeader } from '../ds/components/dialog'
 import { cn } from '../ds/lib/utils'
 import { fieldByKey, formatValue } from '../engine'
-import type { AnalysisResult, DocumentInfo, Evidence, PendingChange } from '../engine'
+import type { AnalysisResult, DocumentInfo, Evidence, InfoDocument, PendingChange } from '../engine'
 import type { CellRef } from './ContractsTable'
 import { DocumentView, type Highlight } from './DocumentView'
 import { docTypeLabel, FIELD_STATUS_LABEL, paragraphAnchor } from './labels'
@@ -67,6 +67,26 @@ export function PendingItem({ change, doc, onShow }: { change: PendingChange; do
   )
 }
 
+/** A linked document that changes nothing recognizable: same shape as `PendingItem`, reason «условий не меняет». */
+export function InfoItem({ info, doc, onShow }: { info: InfoDocument; doc: DocumentInfo | undefined; onShow: (e: Evidence) => void }) {
+  const type = docTypeLabel({ docType: info.docType, signStatus: doc?.signStatus ?? 'unclear' })
+  return (
+    <div data-testid="info-item" className="flex flex-col gap-2 rounded-md border border-dashed border-border-strong bg-surface-sunk/40 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="font-mono text-xs text-foreground">{info.fileName}</span>
+        <Badge size="sm" tone={type.tone}>
+          {type.label}
+        </Badge>
+        <Badge size="sm" tone="neutral">
+          условий не меняет
+        </Badge>
+      </div>
+      <p className="it-small text-muted-foreground">{info.reasonText}</p>
+      <EvidenceQuote evidence={info.evidence} onShow={onShow} />
+    </div>
+  )
+}
+
 /** Side panel «Основание»: file, exact quote, full text with the paragraph highlighted. */
 export function EvidencePanel({ result, cell, onClose }: EvidencePanelProps) {
   const contract = cell ? result.contracts.find((c) => c.key === cell.contractKey) : undefined
@@ -75,14 +95,16 @@ export function EvidencePanel({ result, cell, onClose }: EvidencePanelProps) {
   const evidence = value?.evidence ?? []
   const original = value?.originalEvidence ?? []
   const pending = contract && field ? contract.pendingChanges.filter((p) => p.field === field.key) : []
+  const infoDocs = contract?.infoDocuments ?? []
+  const issues = contract?.issues ?? []
   const otherPending = contract && field ? contract.pendingChanges.filter((p) => p.field !== field.key) : []
 
   const files = React.useMemo(() => {
-    const names = [...evidence, ...original, ...pending.map((p) => p.evidence)].map((e) => e.fileName)
+    const names = [...evidence, ...original, ...pending.map((p) => p.evidence), ...infoDocs.map((i) => i.evidence)].map((e) => e.fileName)
     for (const r of contract?.relatedDocuments ?? []) names.push(r.fileName)
     return [...new Set(names)]
   }, [contract, evidence, original, pending])
-  const highlights: Highlight[] = [...evidence, ...original, ...pending.map((p) => p.evidence)]
+  const highlights: Highlight[] = [...evidence, ...original, ...pending.map((p) => p.evidence), ...infoDocs.map((i) => i.evidence)]
 
   const first = evidence[0] ?? original[0] ?? null
   const [viewFile, setViewFile] = React.useState<string | null>(null)
@@ -144,10 +166,23 @@ export function EvidencePanel({ result, cell, onClose }: EvidencePanelProps) {
               </Section>
             ) : null}
 
-            {pending.length > 0 || otherPending.length > 0 ? (
+            {issues.length > 0 ? (
+              <Section title="Требует проверки">
+                <ul data-testid="contract-issues" className="list-disc pl-5 text-sm text-foreground">
+                  {issues.map((issue) => (
+                    <li key={`${issue.code}-${issue.fileNames.join(',')}`}>{issue.message}</li>
+                  ))}
+                </ul>
+              </Section>
+            ) : null}
+
+            {pending.length > 0 || otherPending.length > 0 || infoDocs.length > 0 ? (
               <Section title="Сведения для проверки (не действуют)">
                 {[...pending, ...otherPending].map((p) => (
                   <PendingItem key={`${p.fileName}-${p.field}-${p.paragraphId}`} change={p} doc={docOf(p.fileName)} onShow={show} />
+                ))}
+                {infoDocs.map((i) => (
+                  <InfoItem key={`${i.fileName}-${i.evidence.paragraphId}`} info={i} doc={docOf(i.fileName)} onShow={show} />
                 ))}
               </Section>
             ) : null}

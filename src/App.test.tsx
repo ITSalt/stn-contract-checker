@@ -207,3 +207,30 @@ describe('question 1 and the check date (D-14)', () => {
     expect(screen.queryByTestId('date-changed')).toBeNull()
   })
 })
+
+describe('documents that change nothing (D-4)', () => {
+  const extra = (name: string, text: string) => new File([text], name, { type: 'text/plain' })
+  const status = ['ПИСЬМО ПОСТАВЩИКА', 'Дата: 06.03.2026', 'Тема: договор STN-102', '', 'Просим сообщить статус поставки по договору STN-102.'].join('\n')
+
+  it('a letter without a proposal is shown in «Сведения для проверки» with its quote', async () => {
+    const user = await renderWithDocuments()
+    await user.upload(screen.getByTestId('file-input'), [extra('status.txt', status)])
+    const item = await within(screen.getByTestId('pending-section')).findByTestId('info-item')
+    expect(item).toHaveTextContent('status.txt')
+    expect(item).toHaveTextContent('условий не меняет')
+    expect(item).toHaveTextContent('Просим сообщить статус поставки по договору STN-102.')
+    await user.click(within(item).getByRole('button', { name: 'Показать в тексте' }))
+    const panel = await screen.findByTestId('evidence-panel')
+    expect(within(panel).getByTestId('info-item')).toHaveTextContent('status.txt')
+  })
+
+  it('a contract signed after the check date shows the reason in the panel', async () => {
+    await renderWithDocuments()
+    const user = userEvent.setup()
+    fireEvent.change(screen.getByTestId('check-date'), { target: { value: '2000-01-01' } })
+    expect(rowOf('STN-101')).toHaveTextContent('требует проверки')
+    await user.click(cell('STN-101', 'amount'))
+    expect(await screen.findByTestId('contract-issues')).toHaveTextContent('не заключён')
+  })
+})
+

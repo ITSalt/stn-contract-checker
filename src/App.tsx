@@ -10,7 +10,7 @@ import { Panel, PanelBody, PanelHeader } from './ds/components/panel'
 import { analyze, contractsDueBefore, formatDate } from './engine'
 import type { Evidence, InputFile } from './engine'
 import { ContractsTable, type CellRef } from './ui/ContractsTable'
-import { EvidencePanel, PendingItem } from './ui/EvidencePanel'
+import { EvidencePanel, InfoItem, PendingItem } from './ui/EvidencePanel'
 import { answerQuestion, answerText, QUESTIONS, type Question } from './ui/questions'
 import { UploadPanel } from './ui/UploadPanel'
 
@@ -78,10 +78,17 @@ export default function App() {
   const openEvidence = (e: Evidence) => {
     const contract = result.contracts.find((c) => c.pendingChanges.some((p) => p.evidence === e))
     const change = contract?.pendingChanges.find((p) => p.evidence === e)
-    if (contract && change) setOpenCell({ contractKey: contract.key, fieldKey: change.field })
+    if (contract && change) {
+      setOpenCell({ contractKey: contract.key, fieldKey: change.field })
+      return
+    }
+    // A document that changes nothing has no field of its own: open the panel on the contract's amount.
+    const info = result.contracts.find((c) => c.infoDocuments.some((i) => i.evidence === e))
+    if (info) setOpenCell({ contractKey: info.key, fieldKey: 'amount' })
   }
 
   const allPending = result.contracts.flatMap((c) => c.pendingChanges.map((p) => ({ contract: c, change: p })))
+  const allInfo = result.contracts.flatMap((c) => c.infoDocuments.map((i) => ({ contract: c, info: i })))
 
   return (
     <main className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 px-6 py-8">
@@ -279,7 +286,7 @@ export default function App() {
         </PanelBody>
       </Panel>
 
-      {allPending.length > 0 ? (
+      {allPending.length > 0 || allInfo.length > 0 ? (
         <Panel data-testid="pending-section">
           <PanelHeader>
             <div>
@@ -294,6 +301,12 @@ export default function App() {
               <div key={`${contract.key}-${change.fileName}-${change.field}-${change.paragraphId}`} className="flex flex-col gap-1">
                 <span className="font-mono text-xs text-muted-foreground">Договор {contract.number ?? contract.fileName}</span>
                 <PendingItem change={change} doc={result.documents.find((d) => d.fileName === change.fileName)} onShow={openEvidence} />
+              </div>
+            ))}
+            {allInfo.map(({ contract, info }) => (
+              <div key={`${contract.key}-${info.fileName}-info`} className="flex flex-col gap-1">
+                <span className="font-mono text-xs text-muted-foreground">Договор {contract.number ?? contract.fileName}</span>
+                <InfoItem info={info} doc={result.documents.find((d) => d.fileName === info.fileName)} onShow={openEvidence} />
               </div>
             ))}
           </PanelBody>
