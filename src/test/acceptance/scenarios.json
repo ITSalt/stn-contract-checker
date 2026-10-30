@@ -1,0 +1,375 @@
+[
+  {
+    "id": "C-03",
+    "source": "reports/acceptance/C-competitor.json",
+    "title": "Допсоглашение подписано только поставщиком",
+    "files": [
+      {
+        "name": "01_contract.txt",
+        "from": "documents/01_contract.txt"
+      },
+      {
+        "name": "02_amendment_signed.txt",
+        "from": "documents/02_amendment_signed.txt",
+        "replace": [
+          [
+            "Статус: подписано обеими сторонами 01.03.2026.",
+            "Статус: подписано со стороны Поставщика 01.03.2026; подпись Покупателя отсутствует."
+          ]
+        ]
+      },
+      {
+        "name": "03_contract.txt",
+        "from": "documents/03_contract.txt"
+      },
+      {
+        "name": "04_contract.txt",
+        "from": "documents/04_contract.txt"
+      },
+      {
+        "name": "05_supplier_email.txt",
+        "from": "documents/05_supplier_email.txt"
+      },
+      {
+        "name": "06_amendment_draft.txt",
+        "from": "documents/06_amendment_draft.txt"
+      }
+    ]
+  },
+  {
+    "id": "C-05",
+    "source": "reports/acceptance/C-competitor.json",
+    "title": "Два подписанных допсоглашения: №2 меняет только срок, имена файлов в обратном порядке",
+    "files": [
+      {
+        "name": "00_first.txt",
+        "text": "ДОПОЛНИТЕЛЬНОЕ СОГЛАШЕНИЕ № 2 К ДОГОВОРУ STN-101\nДата: 03.03.2026\nСтатус: подписано обеими сторонами 03.03.2026.\nПокупатель: ООО «СеверМет». Поставщик: ООО «Вектор Прибор».\n\n1. Пункт 3.1 договора в редакции дополнительного соглашения № 1 изложить в следующей редакции: «Поставщик обязуется поставить оборудование не позднее 20.05.2026».\n\n2. Остальные условия договора и дополнительного соглашения № 1, в том числе стоимость поставки, остаются без изменений.\n\n3. Настоящее соглашение вступает в силу 03.03.2026.\n"
+      },
+      {
+        "name": "a_last.txt",
+        "from": "documents/02_amendment_signed.txt"
+      },
+      {
+        "name": "01_contract.txt",
+        "from": "documents/01_contract.txt"
+      },
+      {
+        "name": "03_contract.txt",
+        "from": "documents/03_contract.txt"
+      },
+      {
+        "name": "04_contract.txt",
+        "from": "documents/04_contract.txt"
+      }
+    ]
+  },
+  {
+    "id": "C-07",
+    "source": "reports/acceptance/C-competitor.json",
+    "title": "Подписанное допсоглашение меняет только оплату, приёмку и неустойку",
+    "files": [
+      {
+        "name": "01_contract.txt",
+        "from": "documents/01_contract.txt"
+      },
+      {
+        "name": "02_amendment_signed.txt",
+        "from": "documents/02_amendment_signed.txt"
+      },
+      {
+        "name": "03_contract.txt",
+        "from": "documents/03_contract.txt"
+      },
+      {
+        "name": "04_contract.txt",
+        "from": "documents/04_contract.txt"
+      },
+      {
+        "name": "05_supplier_email.txt",
+        "from": "documents/05_supplier_email.txt"
+      },
+      {
+        "name": "06_amendment_draft.txt",
+        "from": "documents/06_amendment_draft.txt"
+      },
+      {
+        "name": "07_amendment_3.txt",
+        "text": "ДОПОЛНИТЕЛЬНОЕ СОГЛАШЕНИЕ № 3 К ДОГОВОРУ STN-101\nДата: 04.03.2026\nСтатус: подписано обеими сторонами 04.03.2026.\nПокупатель: ООО «СеверМет». Поставщик: ООО «Вектор Прибор».\n\n1. Пункт 2.2 договора изложить в следующей редакции: «Оплата производится в два этапа: авансовый платеж 600 000 рублей не позднее 20.03.2026, остаток — в течение 20 календарных дней после приемки оборудования».\n\n2. Пункт 3.2 договора изложить в следующей редакции: «Приемка оборудования осуществляется не позднее 25.05.2026. Дата приемки не изменяет срок поставки по пункту 3.1».\n\n3. Пункт 4.1 договора изложить в следующей редакции: «Неустойка за просрочку поставки составляет 0,2% стоимости просроченной части поставки за каждый день, но не более 2 000 000 рублей».\n\n4. Пункты 2.1 и 3.1 договора в редакции дополнительного соглашения № 1 остаются без изменений.\n\n5. Настоящее соглашение вступает в силу 04.03.2026.\n"
+      }
+    ]
+  },
+  {
+    "id": "C-08",
+    "source": "reports/acceptance/C-competitor.json",
+    "title": "Новая цена в иной формулировке, с копейками и суммой прироста",
+    "files": [
+      {
+        "name": "01_contract.txt",
+        "from": "documents/01_contract.txt"
+      },
+      {
+        "name": "02_amendment_signed.txt",
+        "from": "documents/02_amendment_signed.txt",
+        "replace": [
+          [
+            "1. Пункт 2.1 договора изложить в следующей редакции: «Общая стоимость поставки составляет 1 380 000 (один миллион триста восемьдесят тысяч) рублей, включая НДС. Указанная сумма — итоговая стоимость договора».",
+            "1. Стороны договорились увеличить общую стоимость поставки по пункту 2.1 договора на 180 000 (сто восемьдесят тысяч) рублей 50 копеек, до 1 380 000,50 рублей, включая НДС."
+          ]
+        ]
+      },
+      {
+        "name": "03_contract.txt",
+        "from": "documents/03_contract.txt"
+      },
+      {
+        "name": "04_contract.txt",
+        "from": "documents/04_contract.txt"
+      }
+    ]
+  },
+  {
+    "id": "C-09",
+    "source": "reports/acceptance/C-competitor.json",
+    "title": "Форматы сумм: копейки, точки-разделители, «тыс. руб.»",
+    "files": [
+      {
+        "name": "dog_104.txt",
+        "from": "documents/03_contract.txt",
+        "replace": [
+          [
+            "ДОГОВОР ПОСТАВКИ № STN-102",
+            "ДОГОВОР ПОСТАВКИ № STN-104"
+          ],
+          [
+            "Поставщик: ООО «Контур Электро».",
+            "Поставщик: ООО «Альфа Ток»."
+          ],
+          [
+            "2.1. Общая стоимость поставки составляет 840 000 (восемьсот сорок тысяч) рублей, включая НДС.",
+            "2.1. Общая стоимость поставки составляет 1 250 000,50 руб. (один миллион двести пятьдесят тысяч рублей 50 копеек), включая НДС."
+          ]
+        ]
+      },
+      {
+        "name": "dog_105.txt",
+        "from": "documents/03_contract.txt",
+        "replace": [
+          [
+            "ДОГОВОР ПОСТАВКИ № STN-102",
+            "ДОГОВОР ПОСТАВКИ № STN-105"
+          ],
+          [
+            "Поставщик: ООО «Контур Электро».",
+            "Поставщик: ООО «Бета Кабель»."
+          ],
+          [
+            "2.1. Общая стоимость поставки составляет 840 000 (восемьсот сорок тысяч) рублей, включая НДС.",
+            "2.1. Общая стоимость поставки составляет 1.200.000 (один миллион двести тысяч) рублей, включая НДС."
+          ]
+        ]
+      },
+      {
+        "name": "dog_106.txt",
+        "from": "documents/03_contract.txt",
+        "replace": [
+          [
+            "ДОГОВОР ПОСТАВКИ № STN-102",
+            "ДОГОВОР ПОСТАВКИ № STN-106"
+          ],
+          [
+            "Поставщик: ООО «Контур Электро».",
+            "Поставщик: ООО «Гамма Свет»."
+          ],
+          [
+            "2.1. Общая стоимость поставки составляет 840 000 (восемьсот сорок тысяч) рублей, включая НДС.",
+            "2.1. Общая стоимость поставки составляет 1 200 тыс. руб., включая НДС."
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "C-10",
+    "source": "reports/acceptance/C-competitor.json",
+    "title": "Сумма договора в долларах США",
+    "files": [
+      {
+        "name": "dog_107.txt",
+        "from": "documents/03_contract.txt",
+        "replace": [
+          [
+            "ДОГОВОР ПОСТАВКИ № STN-102",
+            "ДОГОВОР ПОСТАВКИ № STN-107"
+          ],
+          [
+            "Поставщик: ООО «Контур Электро».",
+            "Поставщик: ООО «Дельта Импорт»."
+          ],
+          [
+            "2.1. Общая стоимость поставки составляет 840 000 (восемьсот сорок тысяч) рублей, включая НДС.",
+            "2.1. Общая стоимость поставки составляет 15 000 (пятнадцать тысяч) долларов США, включая НДС. Оплата производится в рублях по курсу ЦБ РФ на дату платежа."
+          ]
+        ]
+      },
+      {
+        "name": "01_contract.txt",
+        "from": "documents/01_contract.txt"
+      }
+    ]
+  },
+  {
+    "id": "C-14",
+    "source": "reports/acceptance/C-competitor.json",
+    "title": "Письмо покупателя с «согласием» без допсоглашения",
+    "files": [
+      {
+        "name": "01_contract.txt",
+        "from": "documents/01_contract.txt"
+      },
+      {
+        "name": "02_amendment_signed.txt",
+        "from": "documents/02_amendment_signed.txt"
+      },
+      {
+        "name": "03_contract.txt",
+        "from": "documents/03_contract.txt"
+      },
+      {
+        "name": "04_contract.txt",
+        "from": "documents/04_contract.txt"
+      },
+      {
+        "name": "05_supplier_email.txt",
+        "from": "documents/05_supplier_email.txt"
+      },
+      {
+        "name": "06_amendment_draft.txt",
+        "from": "documents/06_amendment_draft.txt"
+      },
+      {
+        "name": "07_buyer_letter.txt",
+        "text": "ПИСЬМО ПОКУПАТЕЛЯ О СОГЛАСИИ НА ПЕРЕНОС\nДата: 07.03.2026\nОт: ООО «СеверМет»\nКому: ООО «Контур Электро»\nТема: договор STN-102\n\nКоллеги, на ваше письмо от 05.03.2026 по договору STN-102: согласны на перенос срока поставки с 20.03.2026 на 27.03.2026. Согласие покупателя получено, проект дополнительного соглашения направим на подписание.\n"
+      }
+    ]
+  },
+  {
+    "id": "C-15",
+    "source": "reports/acceptance/C-competitor.json",
+    "title": "Письмо поставщика ссылается на подписанное допсоглашение, которого нет в комплекте",
+    "files": [
+      {
+        "name": "01_contract.txt",
+        "from": "documents/01_contract.txt"
+      },
+      {
+        "name": "02_amendment_signed.txt",
+        "from": "documents/02_amendment_signed.txt"
+      },
+      {
+        "name": "03_contract.txt",
+        "from": "documents/03_contract.txt"
+      },
+      {
+        "name": "04_contract.txt",
+        "from": "documents/04_contract.txt"
+      },
+      {
+        "name": "05_supplier_email.txt",
+        "from": "documents/05_supplier_email.txt"
+      },
+      {
+        "name": "dopsoglashenie_STN-102_signed.txt",
+        "text": "ПИСЬМО ПОСТАВЩИКА О НАПРАВЛЕНИИ ДОКУМЕНТОВ\nДата: 08.03.2026\nОт: ООО «Контур Электро»\nКому: ООО «СеверМет»\nТема: договор STN-102\n\nКоллеги, направляем скан дополнительного соглашения № 1 к договору STN-102, подписанного обеими сторонами 07.03.2026. Согласно соглашению, пункт 3.1 договора изложен в новой редакции: поставщик обязуется поставить комплектующие не позднее 15.04.2026. Соглашение вступает в силу 07.03.2026. Оригинал направим почтой.\n"
+      }
+    ]
+  },
+  {
+    "id": "C-18",
+    "source": "reports/acceptance/C-competitor.json",
+    "title": "Сдвиг даты проверки: 01.03 (день вступления), 28.02 и 07.02 (до подписания договоров)",
+    "files": [
+      {
+        "name": "01_contract.txt",
+        "from": "documents/01_contract.txt"
+      },
+      {
+        "name": "02_amendment_signed.txt",
+        "from": "documents/02_amendment_signed.txt"
+      },
+      {
+        "name": "03_contract.txt",
+        "from": "documents/03_contract.txt"
+      },
+      {
+        "name": "04_contract.txt",
+        "from": "documents/04_contract.txt"
+      },
+      {
+        "name": "05_supplier_email.txt",
+        "from": "documents/05_supplier_email.txt"
+      },
+      {
+        "name": "06_amendment_draft.txt",
+        "from": "documents/06_amendment_draft.txt"
+      }
+    ]
+  },
+  {
+    "id": "F-01",
+    "source": "reports/acceptance/F-fool.json",
+    "title": "Один и тот же договор загружен дважды, плюс копия под другим именем",
+    "files": [
+      {
+        "name": "01_contract.txt",
+        "from": "documents/01_contract.txt"
+      },
+      {
+        "name": "02_amendment_signed.txt",
+        "from": "documents/02_amendment_signed.txt"
+      }
+    ]
+  },
+  {
+    "id": "L-14",
+    "source": "reports/acceptance/L-loyal.json",
+    "title": "Нет данных по сроку, требует проверки и удаление файла",
+    "files": [
+      {
+        "name": "01_contract.txt",
+        "from": "documents/01_contract.txt"
+      },
+      {
+        "name": "02_amendment_signed.txt",
+        "from": "documents/02_amendment_signed.txt",
+        "replace": [
+          [
+            "4. Настоящее соглашение вступает в силу 01.03.2026.",
+            "4. Дата вступления соглашения в силу будет определена сторонами дополнительно."
+          ]
+        ]
+      },
+      {
+        "name": "03_contract.txt",
+        "from": "documents/03_contract.txt"
+      },
+      {
+        "name": "04_contract.txt",
+        "from": "documents/04_contract.txt",
+        "replace": [
+          [
+            "3.1. Поставщик обязуется поставить запасные части не позднее 30.04.2026.",
+            "3.1. Срок поставки определяется графиком в приложении № 2. Приложение № 2 в предоставленный комплект документов не входит."
+          ]
+        ]
+      },
+      {
+        "name": "05_supplier_email.txt",
+        "from": "documents/05_supplier_email.txt"
+      },
+      {
+        "name": "06_amendment_draft.txt",
+        "from": "documents/06_amendment_draft.txt"
+      }
+    ]
+  }
+]

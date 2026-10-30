@@ -103,6 +103,10 @@ export type IssueCode =
   | 'unparsed_value'
   | 'unknown_document'
   | 'missing_number'
+  /** A letter refers to a signed amendment that is not among the uploaded documents. */
+  | 'unconfirmed_amendment'
+  /** The contract was signed after the check date. */
+  | 'not_concluded'
 
 export interface Issue {
   code: IssueCode
@@ -151,8 +155,18 @@ export interface ContractResult {
   fields: Record<FieldKey, FieldValue>
   pendingChanges: PendingChange[]
   relatedDocuments: RelatedDocument[]
+  /** Linked documents that change nothing recognizable: shown with a quote so they are not lost. */
+  infoDocuments: InfoDocument[]
   issues: Issue[]
   needsReview: boolean
+}
+
+export interface InfoDocument {
+  fileName: string
+  docType: DocType
+  reasonText: string
+  /** First meaningful paragraph of the document (header lines skipped). */
+  evidence: Evidence
 }
 
 export interface AnalysisResult {

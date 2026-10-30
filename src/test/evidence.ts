@@ -23,6 +23,7 @@ export function allQuotes(result: AnalysisResult): { evidence: Evidence | { file
       if (f.changedBy) out.push({ evidence: f.changedBy, exact: false })
     }
     for (const p of c.pendingChanges) out.push({ evidence: p.evidence, exact: true })
+    for (const d of c.infoDocuments) out.push({ evidence: d.evidence, exact: true })
   }
   for (const d of result.documents) {
     for (const e of [d.contractNumberEvidence, d.signStatusEvidence, d.effectiveDateEvidence]) if (e) out.push({ evidence: e, exact: true })

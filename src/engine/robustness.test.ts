@@ -207,11 +207,28 @@ describe('check date and amendment status', () => {
     expect(r.needsReview).toBe(true)
   })
 
-  it('two effective amendments changing the same field need review', () => {
+  it('two effective amendments changing the same field: the later effective date wins (D-13)', () => {
     const result = analyze(
       [
         { name: 'c.txt', text: contractText },
+        { name: 'a2.txt', text: amendment({ contract: 'STN-210', no: 2, date: '01.03.2026', amount: '720 000' }) },
         { name: 'a1.txt', text: amendment({ contract: 'STN-210', no: 1, date: '01.02.2026', amount: '710 000' }) },
+      ],
+      CHECK_DATE,
+    )
+    const c = findContract(result, 'STN-210')!
+    expect(c.fields.amount).toMatchObject({ value: 720_000, status: 'ok', original: 700_000 })
+    expect(c.fields.amount.changedBy?.fileName).toBe('a2.txt')
+    expect(c.fields.amount.evidence.map((e) => e.fileName)).toEqual(['a1.txt', 'a2.txt'])
+    expect(c.issues.map((i) => i.code)).not.toContain('amendment_conflict')
+    expect(c.fields.deliveryDate).toMatchObject({ value: '2026-04-20', status: 'ok' })
+  })
+
+  it('two effective amendments with the same effective date and different values need review', () => {
+    const result = analyze(
+      [
+        { name: 'c.txt', text: contractText },
+        { name: 'a1.txt', text: amendment({ contract: 'STN-210', no: 1, date: '01.03.2026', amount: '710 000' }) },
         { name: 'a2.txt', text: amendment({ contract: 'STN-210', no: 2, date: '01.03.2026', amount: '720 000' }) },
       ],
       CHECK_DATE,
