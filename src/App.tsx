@@ -32,6 +32,8 @@ export default function App() {
   const [filters, setFilters] = React.useState<Filters>(NO_FILTERS)
   const [question, setQuestion] = React.useState<Question | null>(null)
   const [openCell, setOpenCell] = React.useState<CellRef | null>(null)
+  // Set when question 1 moved the check date: the date it replaced, so the change is never silent.
+  const [dateWas, setDateWas] = React.useState<string | null>(null)
 
   const result = React.useMemo(() => analyze(files, checkDate), [files, checkDate])
 
@@ -60,10 +62,16 @@ export default function App() {
   const ask = (q: Question) => {
     setQuestion(q)
     if (q.kind === 'dueBefore') {
+      setDateWas(null)
       setFilters({ ...NO_FILTERS, beforeEnabled: true, before: q.threshold })
     } else {
       setFilters(NO_FILTERS)
-      if (q.kind === 'delivery') setCheckDate(q.date)
+      if (q.kind === 'delivery') {
+        setDateWas(checkDate !== q.date ? checkDate : null)
+        setCheckDate(q.date)
+      } else {
+        setDateWas(null)
+      }
     }
   }
 
@@ -93,6 +101,7 @@ export default function App() {
                 setCheckDate(e.target.value)
                 // Question 1 is asked «на 10 марта 2026»: another date is no longer that question.
                 if (question?.kind === 'delivery') setQuestion(null)
+                setDateWas(null)
               }}
               className="w-[170px]"
             />
@@ -145,6 +154,30 @@ export default function App() {
                 }
               >
                 <p className="font-medium">{answerText(answer)}</p>
+              </Alert>
+            ) : null}
+            {answer && question?.kind === 'delivery' && dateWas ? (
+              <Alert
+                tone="warning"
+                data-testid="date-changed"
+                action={
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    data-testid="date-restore"
+                    onClick={() => {
+                      setCheckDate(dateWas)
+                      setQuestion(null)
+                      setDateWas(null)
+                    }}
+                  >
+                    Вернуть {formatDate(dateWas)}
+                  </Button>
+                }
+              >
+                <p className="font-medium">
+                  Дата проверки изменена на {formatDate(question.date)} (дата из вопроса), была {formatDate(dateWas)}
+                </p>
               </Alert>
             ) : null}
           </PanelBody>
