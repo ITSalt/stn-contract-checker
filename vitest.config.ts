@@ -6,5 +6,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.{ts,tsx}'],
+    // A clean machine (node:22 container, cold jsdom start) runs the UI tests slower than the 5 s default.
+    testTimeout: 20000,
+    hookTimeout: 20000,
   },
 })
