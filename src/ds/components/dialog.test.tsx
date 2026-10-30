@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import '../test-setup.ts';
 /**
  * Dialog core: portal, layer stack, focus trap, scroll lock.
  *

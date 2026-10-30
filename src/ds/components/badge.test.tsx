@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import '../test-setup.ts';
 /**
  * Badge primitive tests.
  */

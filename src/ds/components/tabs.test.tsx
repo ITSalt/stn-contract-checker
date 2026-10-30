@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import '../test-setup.ts';
 import { useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

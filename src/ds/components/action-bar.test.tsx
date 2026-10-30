@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import '../test-setup.ts';
 /**
  * ActionBar, the one footer bar; PanelFooter is a deprecated wrapper over it.
  */

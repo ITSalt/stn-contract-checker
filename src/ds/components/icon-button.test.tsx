@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import '../test-setup.ts';
 /**
  * IconButton primitive tests.
  * square 32px (sm 26px) icon-only control, radius-sm, hairline border,

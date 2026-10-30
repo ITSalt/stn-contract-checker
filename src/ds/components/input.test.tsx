@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import '../test-setup.ts';
 import { describe, it, expect } from 'vitest';
 
 import { cn } from '../lib/utils.js';

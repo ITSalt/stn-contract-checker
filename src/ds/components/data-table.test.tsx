@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+import '../test-setup.ts';
 /**
  * Unit tests for the data primitives:
  * DataTable, DescriptionList.
