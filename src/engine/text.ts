@@ -103,14 +103,27 @@ export function findDates(text: string): DateMatch[] {
   return result.sort((a, b) => a.start - b.start)
 }
 
-/** Amounts followed by a ruble mark: `1 500 000 (один миллион пятьсот тысяч) рублей`, `600 000 руб.`, `5000 ₽`. */
+/**
+ * Amounts followed by a ruble mark: `1 500 000 (один миллион пятьсот тысяч) рублей`, `600 000 руб.`,
+ * `5000 ₽`, `1.200.000 рублей` (two or more dot groups), `1 200 тыс. руб.`, `1,5 млн руб.`,
+ * `180 000 рублей 50 копеек`. `1.200 руб.` is ambiguous and not taken.
+ */
 export function findMoney(text: string): Found<number>[] {
   const result: Found<number>[] = []
-  const re = /(?<![\d.,])(\d{1,3}(?:[ \u00A0\u202F]\d{3})+|\d+)(?:[,.](\d{1,2}))?(?![\d.,]\d)\s*(?:\([^()]*\)\s*)?(?:руб|₽|р\.)/gi
+  const re =
+    /(?<![\d.,])(\d{1,3}(?:\.\d{3}){2,}|\d{1,3}(?:[ \u00A0\u202F]\d{3})+|\d+)(?:([,.])(\d{1,2}))?(?![\d.,]\d)(?:\s*(тыс|млн)\.?)?\s*(?:\([^()]*\)\s*)?(?:руб|₽|р\.)(?:[а-яё]*\.?\s*(\d{1,2})\s*коп)?/gi
   for (const m of text.matchAll(re)) {
-    const rubles = Number(m[1].replace(/[ \u00A0\u202F]/g, ''))
-    const kopeks = m[2] ? Number(m[2].padEnd(2, '0')) / 100 : 0
-    result.push({ start: m.index, end: m.index + m[1].length + (m[2] ? m[2].length + 1 : 0), value: rubles + kopeks })
+    const [, int, sep, frac, scale, tailKopeks] = m
+    // «1.200.000,50»: after dot groups only a comma separates kopeks.
+    if (int.includes('.') && sep === '.') continue
+    // «1 млн 200 тыс. руб.»: only a part of the amount would be taken.
+    if (/(?:тыс|млн|миллион)\S*\s*$/i.test(text.slice(0, m.index))) continue
+    const whole = Number(int.replace(/[ \u00A0\u202F.]/g, ''))
+    const fraction = frac ? Number(frac.padEnd(2, '0')) / 100 : 0
+    let value = whole + fraction
+    if (scale) value = Math.round(value * (scale.toLowerCase() === 'тыс' ? 1e3 : 1e6) * 100) / 100
+    else if (!frac && tailKopeks) value = whole + Number(tailKopeks) / 100
+    result.push({ start: m.index, end: m.index + int.length + (frac ? frac.length + 1 : 0), value })
   }
   return result
 }
