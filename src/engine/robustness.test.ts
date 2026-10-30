@@ -359,3 +359,44 @@ describe('one field changed in the training documents (demo-like edits)', () => 
     expect(findContract(result, 'STN-103')!.fields.amount).toMatchObject({ value: 575_000, status: 'ok' })
   })
 })
+
+describe('document mentioning several contracts (review WP-APP-03)', () => {
+  const twoContractsLetter = [
+    'ПИСЬМО ПОСТАВЩИКА О ПРЕДЛАГАЕМОМ ПЕРЕНОСЕ',
+    'Дата: 05.03.2026',
+    'От: ООО «Тест Поставка»',
+    'Кому: ООО «СеверМет»',
+    'Тема: договоры STN-301 и STN-302',
+    '',
+    'По договорам STN-301 и STN-302 предлагаем перенести срок поставки на 30.05.2026.',
+  ].join('\n')
+
+  it('is not silently linked to the first contract: both contracts need review, nothing is pending', () => {
+    const result = analyze(
+      [
+        { name: 'c1.txt', text: contract({ number: 'STN-301' }) },
+        { name: 'c2.txt', text: contract({ number: 'STN-302' }) },
+        { name: 'l.txt', text: twoContractsLetter },
+      ],
+      CHECK_DATE,
+    )
+    const letterDoc = result.documents.find((d) => d.fileName === 'l.txt')!
+    expect(letterDoc.mentionedContracts).toEqual(['STN-301', 'STN-302'])
+    expect(letterDoc.linkedContract).toBeNull()
+    expect(result.issues).toMatchObject([{ code: 'ambiguous_link', fileNames: ['l.txt'] }])
+    for (const number of ['STN-301', 'STN-302']) {
+      const c = findContract(result, number)!
+      expect(c.pendingChanges).toEqual([])
+      expect(c.needsReview).toBe(true)
+      expect(c.issues).toMatchObject([{ code: 'ambiguous_link', fileNames: ['l.txt'] }])
+      expect(c.fields.deliveryDate).toMatchObject({ value: '2026-05-15', status: 'ok' })
+    }
+  })
+
+  it('an amendment whose body names another contract is ambiguous too', () => {
+    const text = amendment({ contract: 'STN-301', amount: '900 000' }).replace('Остальные условия договора', 'Условия договора STN-302 и остальные условия договора')
+    const result = analyze([{ name: 'c1.txt', text: contract({ number: 'STN-301' }) }, { name: 'a.txt', text }], CHECK_DATE)
+    expect(findContract(result, 'STN-301')!.fields.amount.value).toBe(500_000)
+    expect(result.issues.map((i) => i.code)).toEqual(['ambiguous_link'])
+  })
+})

@@ -232,6 +232,14 @@ export function resolve(documents: DocumentInfo[], checkDate: string, fields: Fi
         message: `Документ упоминает несколько договоров (${doc.mentionedContracts.join(', ')}): связь не определена`,
         fileNames: [doc.fileName],
       })
+      // Each uploaded contract it names needs review: its changes are not applied or shown as pending.
+      for (const number of doc.mentionedContracts) {
+        byKey.get(normalizeNumber(number))?.result.issues.push({
+          code: 'ambiguous_link',
+          message: `Документ упоминает несколько договоров (${doc.mentionedContracts.join(', ')}); его изменения не учтены — проверьте вручную`,
+          fileNames: [doc.fileName],
+        })
+      }
       continue
     }
     if (!doc.contractNumber) {

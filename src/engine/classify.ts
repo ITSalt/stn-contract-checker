@@ -71,6 +71,24 @@ function numberHits(paragraphs: Paragraph[], re: RegExp): NumberHit[] {
   return hits
 }
 
+/**
+ * Other numbers of the same series anywhere in the text («по договорам STN-301 и STN-302»,
+ * «условия договора STN-302»): a document naming several contracts must not be linked to the first.
+ */
+function sameSeriesHits(paragraphs: Paragraph[], hits: NumberHit[]): NumberHit[] {
+  const prefixes = new Set<string>()
+  for (const h of hits) {
+    const m = /^([A-Za-zА-ЯЁа-яё]+[-‐‑–—/]?)\d/.exec(h.number)
+    if (m) prefixes.add(m[1])
+  }
+  const found: NumberHit[] = []
+  for (const prefix of prefixes) {
+    const escaped = prefix.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&')
+    found.push(...numberHits(paragraphs, new RegExp(`(?<![A-Za-zА-ЯЁа-яё0-9-])(${escaped}\\d[^\\s,;:«»"()]*)`, 'gi')))
+  }
+  return found
+}
+
 export function classify(fileName: string, paragraphs: Paragraph[], text: string): Classification {
   const titleParagraph = paragraphs[0]
   const title = titleParagraph?.text ?? ''
@@ -94,6 +112,7 @@ export function classify(fileName: string, paragraphs: Paragraph[], text: string
       new RegExp(`договор[а-яё]*(?:\\s+поставки)?\\s+(?:№\\s*${NUMBER_TOKEN}|${LETTERED_TOKEN})`, 'gi'),
     )
   }
+  if (docType !== 'contract') hits = [...hits, ...sameSeriesHits(paragraphs, hits)]
   const mentioned = [...new Map(hits.map((h) => [normalizeNumber(h.number), h.number])).values()]
   const first = hits[0]
   const contractNumber = mentioned.length === 1 ? mentioned[0] : null
