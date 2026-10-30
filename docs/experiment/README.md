@@ -26,6 +26,8 @@
 | [acceptance/L-verdicts.md](acceptance/L-verdicts.md), [F-verdicts.md](acceptance/F-verdicts.md), [C-verdicts.md](acceptance/C-verdicts.md) | вердикты первого прогона по каждому сценарию |
 | [acceptance/FIX-PLAN.md](acceptance/FIX-PLAN.md) | план исправлений найденного (причины с файлом и строкой) |
 | [acceptance/pr6-verdicts.md](acceptance/pr6-verdicts.md), [pr6-diff.md](acceptance/pr6-diff.md) | повторный прогон после исправлений движка: было → стало |
+| [acceptance/FINAL.md](acceptance/FINAL.md) | итоговый прогон |
+| [acceptance/DEPLOY-CHECK.md](acceptance/DEPLOY-CHECK.md) | развёртывание агентом клиента по AGENTS.md |
 | [acceptance/*.json](acceptance/) | сами сценарии клиентов (полные тексты документов и шаги); те же входы — в тестах `src/test/acceptance/` |
 | [screenshots/INDEX.md](screenshots/INDEX.md) | протокол снимков: одна и та же проверка Playwright на каждой версии, кадры с постоянными именами |
 
@@ -37,7 +39,7 @@
 | 01 | первая сдача интерфейса | рабочий экран закупщика |
 | 02 | интерфейс после ревью | «нет данных: сумма» вместо «ок», переход к абзацу, верные ярлыки |
 | 03 | первая версия для клиента | то, что прошло приёмку тремя клиентами в первый раз |
-| 04 | финальная версия | после исправлений по приёмке (добавляется последней) |
+| 04 | финальная версия | после исправлений по приёмке, проверено на чистой машине и агентом клиента |
 
 Сравнивать удобно одноимённые кадры разных версий, например `02-uploaded-table.png` и
 `03-evidence-stn101-delivery.png`.
