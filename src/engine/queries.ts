@@ -35,6 +35,13 @@ function sourceText(field: FieldValue): string {
   return `${why}${first ? ` (источник: ${first.fileName})` : ''}`
 }
 
+/** «; строка договора требует проверки: …» when the row needs review but the answered value itself does not say so. */
+function rowReview(contract: ContractResult, field: FieldValue): string {
+  if (!contract.needsReview || field.status === 'needs_review') return ''
+  const reasons = [...new Set(contract.issues.map((i) => i.message))].join('; ')
+  return `; строка договора требует проверки: ${reasons || 'другие поля требуют проверки'}`
+}
+
 function fieldAnswer(result: AnalysisResult, contractNumber: string, key: string, describe: (f: FieldValue) => string): FieldAnswer {
   const contract = findContract(result, contractNumber)
   const checkDate = result.checkDate
@@ -46,6 +53,7 @@ function fieldAnswer(result: AnalysisResult, contractNumber: string, key: string
   let text = describe(field)
   if (field.status === 'needs_review') text += ` — требует проверки: ${field.reason ?? ''}`.trimEnd()
   if (pending.length > 0) text += `; есть несогласованные изменения: ${pending.length}`
+  text += rowReview(contract, field)
   return { contractNumber, contract, field, pending, checkDate, text }
 }
 
@@ -108,7 +116,7 @@ export function contractsDueBefore(result: AnalysisResult, threshold: DateInput)
   const list = items
     .map((i) => {
       const changes = i.pendingDeliveryChanges.map((p) => `${p.proposedValue && typeof p.proposedValue === 'string' ? formatDate(p.proposedValue) : NO_DATA} — ${p.reasonText}`)
-      return `${i.contract.number ?? i.contract.fileName} (${formatDate(i.deliveryDate)}${changes.length ? `; несогласованное изменение срока: ${changes.join('; ')}` : '; несогласованных изменений срока нет'})`
+      return `${i.contract.number ?? i.contract.fileName} (${formatDate(i.deliveryDate)}${changes.length ? `; несогласованное изменение срока: ${changes.join('; ')}` : '; несогласованных изменений срока нет'}${rowReview(i.contract, i.field)})`
     })
     .join(', ')
   let text = items.length

@@ -66,6 +66,17 @@ describe('D-2 (C-05, D-13): the latest effective amendment wins, evidence keeps 
     expect(c.fields.amount).toMatchObject({ value: 1_380_000, status: 'ok' })
   })
 
+  it('C-07 regression: an amendment changing payment, acceptance and penalty does not touch amount or term', () => {
+    const r = run(scenarioFiles('C-07'))
+    const c = contractOf(r, 'STN-101')
+    expect(c.fields.amount).toMatchObject({ value: 1_380_000, status: 'ok' })
+    expect(c.fields.deliveryDate).toMatchObject({ value: '2026-04-30', status: 'ok' })
+    expect(c.fields.deliveryDate.changedBy?.fileName).toBe('02_amendment_signed.txt')
+    expect(c.issues).toEqual([])
+    expect(c.infoDocuments.map((d) => d.fileName)).toEqual(['07_amendment_3.txt'])
+    expect(contractsDueBefore(r, '2026-04-01').items.map((i) => i.contract.number)).toEqual(['STN-102'])
+  })
+
   it('an effective amendment touching the term clause without a recognizable value needs review', () => {
     const files = [
       ...loadDocuments().filter((f) => f.name === '01_contract.txt'),
@@ -100,7 +111,8 @@ describe('D-5 (L-14, A-6): amendment without an effective date marks its fields 
     expect(c.fields.amount.reason).toContain('02_amendment_signed.txt')
     expect(c.fields.deliveryDate.reason).toContain('02_amendment_signed.txt')
     expect(contractOf(r, 'STN-102').fields.deliveryDate).toMatchObject({ value: '2026-03-20', status: 'ok' })
-    expect(contractOf(r, 'STN-103').fields.deliveryDate.status).toBe('no_data')
+    // Term through an appendix that is not uploaded: no date is invented (accepted by the client).
+    expect(contractOf(r, 'STN-103').fields.deliveryDate).toMatchObject({ value: null, status: 'needs_review' })
   })
 
   it('L-14 after removing the amendment: both fields ok, no review', () => {
@@ -108,6 +120,13 @@ describe('D-5 (L-14, A-6): amendment without an effective date marks its fields 
     expect(c.fields.amount).toMatchObject({ value: 1_200_000, status: 'ok' })
     expect(c.fields.deliveryDate).toMatchObject({ value: '2026-04-15', status: 'ok' })
     expect(c.needsReview).toBe(false)
+  })
+
+  it('C-03 (D-16): an amendment signed by the supplier only keeps contract values for review', () => {
+    const c = contractOf(run(scenarioFiles('C-03')), 'STN-101')
+    expect(c.fields.amount).toMatchObject({ value: 1_200_000, status: 'needs_review' })
+    expect(c.fields.deliveryDate).toMatchObject({ value: '2026-04-15', status: 'needs_review' })
+    expect(c.pendingChanges.filter((p) => p.fileName === '02_amendment_signed.txt').map((p) => p.reason)).toEqual(['unclear_signature', 'unclear_signature'])
   })
 
   it('unclear signature also marks the changed field for review', () => {
@@ -137,6 +156,25 @@ describe('D-4 (C-14, C-15, A-6): letters are never lost', () => {
     expect(c.issues).toEqual(expect.arrayContaining([expect.objectContaining({ code: 'unconfirmed_amendment', fileNames: ['dopsoglashenie_STN-102_signed.txt'] })]))
     const q4 = contractsDueBefore(r, '2026-04-01')
     expect(q4.items.map((i) => i.contract.number)).toEqual(['STN-102'])
+  })
+
+  it('no unconfirmed_amendment when the letter says «не подписано» or the amendment is uploaded', () => {
+    const base = loadDocuments().filter((f) => f.name === '03_contract.txt')
+    const unsigned = ['ПИСЬМО ПОСТАВЩИКА', 'Дата: 05.03.2026', 'От: ООО «Контур Электро»', 'Тема: договор STN-102', '', 'Дополнительное соглашение № 1 к договору STN-102 не подписано обеими сторонами.'].join('\n')
+    expect(issueCodes(run([...base, { name: 'l.txt', text: unsigned }]), 'STN-102')).not.toContain('unconfirmed_amendment')
+    const amendment = [
+      'ДОПОЛНИТЕЛЬНОЕ СОГЛАШЕНИЕ № 1 К ДОГОВОРУ STN-102',
+      'Дата: 07.03.2026',
+      'Статус: подписано обеими сторонами 07.03.2026.',
+      '',
+      '1. Пункт 3.1 договора изложить в следующей редакции: «Поставщик обязуется поставить комплектующие не позднее 15.04.2026».',
+      '',
+      '2. Настоящее соглашение вступает в силу 07.03.2026.',
+    ].join('\n')
+    const files = [...scenarioFiles('C-15'), { name: 'a1.txt', text: amendment }]
+    const r = run(files)
+    expect(issueCodes(r, 'STN-102')).not.toContain('unconfirmed_amendment')
+    expect(contractOf(r, 'STN-102').fields.deliveryDate).toMatchObject({ value: '2026-04-15', status: 'ok' })
   })
 
   it('a linked letter without changes is listed in infoDocuments with an exact quote', () => {

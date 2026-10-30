@@ -13,6 +13,11 @@ const VAT_BEFORE = /(?:НДС|налог\S*)[^\d]{0,15}$/i
 // «включая НДС 20%» is a property of the price, not another amount.
 const VAT_RATE = /(НДС|налог\S*)\s*\(?\s*\d+(?:[,.]\d+)?\s*%\s*\)?/gi
 const CHANGE_VERB = /(?:^|[^а-яё])(?:изменить|увеличить|уменьшить|установить)/i
+const BY_DELTA = /(?:^|[^а-яё])(?:увеличить|уменьшить)/i
+// A price in a foreign currency is never converted to rubles (D-15).
+const FOREIGN = /доллар|(?:^|[^а-яё])евро(?![а-яё])|юан[ьяейю]|(?:^|[^A-Za-z])(?:USD|EUR|CNY)(?![A-Za-z])|[$€¥]/i
+const FOREIGN_AMOUNT = /\d[\d \u00A0\u202F.,]*\s*(?:\([^()]*\)\s*)?(?:доллар\S*(?:\s+США)?|евро|юан\S*|USD|EUR|CNY|[$€¥])/i
+const before = (sentence: string, at: number, re: RegExp) => re.test(sentence.slice(Math.max(0, at - 6), at))
 
 function hitsIn(text: string, proposal: boolean): MatchHit[] {
   const hits: MatchHit[] = []
@@ -35,6 +40,16 @@ function hitsIn(text: string, proposal: boolean): MatchHit[] {
       }
       continue
     }
+    if (FOREIGN.test(sentence)) {
+      const original = FOREIGN_AMOUNT.exec(sentence)?.[0].trim() ?? 'сумма в иностранной валюте'
+      hits.push({
+        kind: 'unparsed',
+        start: s.start,
+        end: s.end,
+        reason: `Цена указана в иностранной валюте («${original}»): сумма в рублях зависит от курса и не рассчитывается`,
+      })
+      continue
+    }
     if (money.length > 0 && CEILING.test(topics)) {
       hits.push({ kind: 'unparsed', start: s.start, end: s.end, reason: 'Указан предел стоимости, а не согласованная стоимость' })
       continue
@@ -44,9 +59,17 @@ function hitsIn(text: string, proposal: boolean): MatchHit[] {
       continue
     }
     if (proposal) {
+      // «увеличить … на 180 000 … до 1 380 000,50»: the resulting amount follows «до».
+      const target = money.filter((m) => before(sentence, m.start, /(?:^|[^а-яё])до\s*$/i))
       // «с 1 000 000 на 1 450 000 рублей»: the proposed amount follows «на».
-      const after = money.filter((m) => /(?:^|[^а-яё])на\s*$/i.test(sentence.slice(Math.max(0, m.start - 6), m.start)))
-      if (after.length > 0) money = after
+      const after = money.filter((m) => before(sentence, m.start, /(?:^|[^а-яё])на\s*$/i))
+      const from = money.some((m) => before(sentence, m.start, /(?:^|[^а-яё])с\s*$/i))
+      if (target.length > 0) money = target
+      else if (after.length > 0 && BY_DELTA.test(sentence) && !from) {
+        // Only the increment is given: the resulting amount is never computed.
+        hits.push({ kind: 'unparsed', start: s.start, end: s.end, reason: 'Указано изменение стоимости на сумму, итоговая стоимость не указана' })
+        continue
+      } else if (after.length > 0) money = after
     }
     const distinct = [...new Set(money.map((m) => m.value))]
     if (distinct.length === 1) {
