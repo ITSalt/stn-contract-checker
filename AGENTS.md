@@ -7,16 +7,25 @@
 ## Требования
 
 - Node.js 22 LTS и npm. Проверьте: `node -v` → `v22.x`.
+- `git` и `curl`. В slim-образах: `apt-get update && apt-get install -y git curl ca-certificates`.
 - Интернет для `npm ci`.
 
 ## Шаги и ожидаемый результат
 
 1. `git clone https://github.com/ITSalt/stn-contract-checker.git && cd stn-contract-checker` → каталог создан.
 2. `npm ci` → exit 0.
-3. `npm test` → все тесты зелёные, `0 failed`.
+3. `npm test` → exit 0, итоговая строка `Tests N passed (N)`; при падениях в ней будет `N failed`.
 4. `npm run build` → exit 0, собран каталог `dist/`.
-5. `npm run dev -- --host 0.0.0.0 --port 5173` → сервер слушает порт 5173.
+5. Запустите dev-сервер в фоне: `nohup npm run dev -- --host 0.0.0.0 --port 5173 > dev.log 2>&1 &`
+   (или в отдельном терминале) и дождитесь `ready` в `dev.log` → сервер слушает порт 5173.
+   Для `npm run e2e:shots` этот сервер не нужен: тот поднимает свой на порту 5291.
 6. `curl -fsS http://localhost:5173/` → HTTP 200.
+
+## Браузерная проверка
+
+1. `npx playwright install --with-deps chromium` (один раз). На Linux нужен root или sudo, ставится около
+   95 пакетов apt, 1–2 минуты.
+2. `npm run e2e:shots` → `2 passed`, 10 снимков в `artifacts/screenshots/`.
 
 ## Приёмочная проверка на учебном комплекте
 
@@ -28,12 +37,11 @@
 | STN-102 | 840 000 ₽ | 20.03.2026 |
 | STN-103 | нет данных | 30.04.2026 |
 
-Ответы на четыре быстрых вопроса должны совпадать с таблицей в разделе «Пример» файла README.md.
+Ответы на четыре быстрых вопроса сверяйте с таблицей в разделе «Пример» файла README.md. Совпадать должны
+значения (дата, сумма, источник, список договоров), а не формулировки.
 
-## Браузерная проверка
-
-1. `npx playwright install chromium` (один раз).
-2. `npm run e2e:shots` → `2 passed`, 10 снимков в `artifacts/screenshots/`.
+Без графического интерфейса сверяйте по снимкам из `npm run e2e:shots`: `02` (таблица) и `05`–`08`
+(ответы на вопросы 1–4).
 
 ## Правила для агента
 
@@ -45,12 +53,13 @@
 ## Что отчитать клиенту
 
 - Версия Node (`node -v`).
-- Итоговая строка `npm test` (число тестов, `0 failed`).
+- Итоговая строка `npm test` (`Tests N passed (N)`).
 - URL, по которому открывается приложение.
 - Снимок таблицы с тремя договорами (из `artifacts/screenshots/`).
 
 ## Частые проблемы
 
-- **Нет Chromium для Playwright** (`Executable doesn't exist`): `npx playwright install chromium`.
+- **Нет Chromium для Playwright** (`Executable doesn't exist`): `npx playwright install --with-deps chromium`.
+- **`error while loading shared libraries: libglib-2.0.so.0`**: `npx playwright install-deps chromium`.
 - **Порт занят** (`Port 5173 is already in use` или `EADDRINUSE`): запустите на другом порту, см. выше.
 - **Node не 22**: переключитесь на Node 22 LTS (`nvm install 22 && nvm use 22`) и повторите `npm ci`.
